@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TesteApi.DTOs;
 using TesteApi.Models;
 using TesteApi.Repository;
 
@@ -23,7 +20,7 @@ namespace TesteApi.Controllers
         }
 
         [HttpGet("get-all")]
-        public IActionResult GetAll()
+        public ActionResult GetAll()
         {
             var genres = _unit.GenreRepository
                 .Get()
@@ -36,7 +33,7 @@ namespace TesteApi.Controllers
         }
 
         [HttpGet("get-by-id/{id:int}", Name = "GenreById")]
-        public IActionResult GetById(int id)
+        public ActionResult GetById(int id)
         {
             var genre = _unit.GenreRepository.GetById(g => g.Id == id);
 
@@ -47,7 +44,7 @@ namespace TesteApi.Controllers
         }
 
         [HttpPost("create-new-genre")]
-        public async Task<IActionResult> CreateGenre([FromBody] Genre genre)
+        public async Task<ActionResult> CreateGenre([FromBody] Genre genre)
         {
             if (genre is null)
                 return BadRequest("Gênero não pode ser nulo");

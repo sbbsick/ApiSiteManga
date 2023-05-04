@@ -35,16 +35,13 @@ public class PageRepository : Repository<Page>, IPageRepository
         {
             files.ForEach(file =>
             {
-
                 if (file.Length <= 0) return;
-
                 var page = new Page
                 {
                     PageUrl = Encoding.ASCII.GetBytes(file.FileName),
                     ChapterId = chapter.Id,
                     Chapter = chapter
                 };
-
                 UploadFiles(files, subDirectory, mangaName);
                 Add(page);
             });

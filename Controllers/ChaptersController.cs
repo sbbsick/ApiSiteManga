@@ -74,22 +74,14 @@ namespace TesteApi.Controllers
 
             var manga = await _unit.MangaRepository.GetById(m => m.Id == chapter.MangaId);
 
-            var cover = files.FirstOrDefault(files.FindLast(f => f.FileName == "capa"));
-
             if (manga is null)
                 return BadRequest(new { message = "Manga não encontrado." });
 
             if (chapter is null)
                 return BadRequest(new { message = "Capítulo não encontrado." });
 
-            if (cover is null)
-                return BadRequest(new { message = "Capa não encontrada." });
-
-
             _unit.PageRepository?.ReadFilesAndCreatePages(files, chapter.ChapterNumber.ToString(), chapter,
                 manga.Name);
-
-            manga.Cover = cover.FileName;
 
             manga.Chapters?.Add(chapter);
 

@@ -1,14 +1,37 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TesteApi.Repository;
 
-namespace TesteApi.Controllers;
-
-[Route("api/page")]
-[ApiController]
-public class PagesController : Controller
+namespace TesteApi.Controllers
 {
-    [HttpGet("get-pages-by-chapter/{chapterId:int}")]
-    public Task<IActionResult> GetPagesByChapter(int chapterId)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class PagesController : ControllerBase
     {
-        throw new NotImplementedException();
+        private readonly IUnitOfWork _unit;
+
+        public PagesController(IUnitOfWork unit)
+        {
+            _unit = unit;
+        }
+
+
+        [HttpGet("get-pages-by-chapter/{chapterId:int}")]
+        public async Task<ActionResult> GetPagesByChapter(int chapterId)
+        {
+            var chapter = _unit.ChapterRepository
+                .Get()
+                .Where(c => c.Id == chapterId)
+                .Include(c => c.Manga)
+                .Select(c => c.Manga.Name);
+
+
+
+            if (chapter is null)
+                return BadRequest(new { message = "Capítulo não encontrado." });
+
+            return Ok(chapter);
+        }
     }
 }
