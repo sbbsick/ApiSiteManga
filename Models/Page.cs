@@ -9,12 +9,10 @@ public class Page
     [Key]
     public int Id { get; set; }
 
-    [NotMapped]
-    public List<IFormFile> Files { get; set; }
+    //[NotMapped]
+    //public List<IFormFile>? Files { get; set; }
 
-    public byte[]? PageUrl { get; set; }
-
-    public byte[]? CoverUrl { get; set; }
+    public string? PageUrl { get; set; }
 
     public int ChapterId { get; set; }
 

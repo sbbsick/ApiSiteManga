@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Headers;
 using TesteApi.Context;
 using TesteApi.Models;
 
@@ -18,17 +19,32 @@ public class MangaRepository : Repository<Manga>, IMangaRepository
         return await Get().Include(m => m.Genres).ToListAsync();
     }
 
-    public void DeleteMangaPages(string mangaName)
-    {
-        var manga = Get().FirstOrDefault(m => m.Name == mangaName);
+    //public void UploadCover(IFormFile mangaCover, string mangaName)
+    //{
+    //    var path = Path.Combine(_environment.ContentRootPath, $"wwwroot/uploads/{mangaName}");
 
-        if (manga.Chapters == null) return;
+    //    if (!Directory.Exists(path)) 
+    //        Directory.CreateDirectory(path);
 
-        var path = Path.Combine(_environment.ContentRootPath, $"wwwroot/uploads/{mangaName}");
+    //    if (mangaCover.Length <= 0) return;
 
-        if (Directory.Exists(path))
-            Directory.Delete(path, true);
-    }
+    //    var filePath = Path.Combine(path, mangaCover.FileName);
+    //    using var stream = new FileStream(filePath, FileMode.Create);
+    //    mangaCover.CopyToAsync(stream);
+    //}
+
+
+    //public void DeleteMangaPages(string mangaName)
+    //{
+    //    var manga = Get().FirstOrDefault(m => m.Name == mangaName);
+
+    //    if (manga.Chapters == null) return;
+
+    //    var path = Path.Combine(_environment.ContentRootPath, $"wwwroot/uploads/{mangaName}");
+
+    //    if (Directory.Exists(path))
+    //        Directory.Delete(path, true);
+    //}
 
     //public async Task<IEnumerable<Manga>> GetMangaChapters()
     //{

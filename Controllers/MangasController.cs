@@ -8,7 +8,6 @@ using TesteApi.Repository;
 namespace TesteApi.Controllers
 {
     [Route("api/manga")]
-    //[EnableCors]
     [ApiController]
     public class MangasController : ControllerBase
     {
@@ -69,12 +68,15 @@ namespace TesteApi.Controllers
         }
 
         [HttpPost("create-new-manga")]
-        public async Task<ActionResult<Manga>> Create([FromBody] MangaDTO mangaDto)
+        public async Task<ActionResult<Manga>> Create([FromForm] MangaDTO mangaDto, IFormFile mangaCover)
         {
             if (!ModelState.IsValid)
                 return BadRequest("O manga não é válido");
 
             var manga = _mapper.Map<Manga>(mangaDto);
+
+            if (mangaCover is not null)
+                manga.CoverUrl = _unit.MangaRepository.ImgurImageUpload(mangaCover).Result;
 
             if (manga.GenresId != null && manga.Id == 0)
             {
@@ -93,14 +95,17 @@ namespace TesteApi.Controllers
         }
 
         [HttpPut("update-manga/{id:int}")]
-        public async Task<ActionResult> Update(int id, [FromBody] MangaDTO mangaDto)
+        public async Task<ActionResult> Update(int id, [FromForm] MangaDTO mangaDto, IFormFile mangaCover)
         {
             if (id != mangaDto.Id)
                 return BadRequest("Mangá não encontrado.");
 
             var manga = _mapper.Map<Manga>(mangaDto);
 
-            if (manga.GenresId != null && manga.Id == 0) //****// != 0
+            if (mangaCover is not null)
+                manga.CoverUrl = _unit.MangaRepository.ImgurImageUpload(mangaCover).Result;
+
+            if (manga.GenresId != null && manga.Id != 0) //****// != 0
             {
                 foreach (var ids in manga.GenresId)
                 {
@@ -126,8 +131,9 @@ namespace TesteApi.Controllers
             if (manga is null)
                 return NotFound("O manga não foi encontrado");
 
-            if (manga.Chapters != null && manga.Chapters.Count > 0)
-                _unit.MangaRepository.DeleteMangaPages(manga.Name);
+            //if (manga.Chapters != null && manga.Chapters.Count > 0)
+            //    _unit.MangaRepository.DeleteMangaPages(manga.Name);
+
 
             _unit.MangaRepository.Remove(manga);
 

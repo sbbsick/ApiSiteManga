@@ -6,155 +6,147 @@ using TesteApi.DTOs;
 using TesteApi.Models;
 using TesteApi.Repository;
 
-namespace TesteApi.Controllers
+namespace TesteApi.Controllers;
+
+[Route("api/chapter")]
+[ApiController]
+public class ChaptersController : ControllerBase
 {
-    [Route("api/chapter")]
-    //[EnableCors]
-    [ApiController]
-    public class ChaptersController : ControllerBase
+    private readonly IUnitOfWork _unit;
+    private readonly IMapper _mapper;
+
+    public ChaptersController(IUnitOfWork unit, IMapper mapper)
     {
-        private readonly IUnitOfWork _unit;
-        private readonly IMapper _mapper;
+        _unit = unit;
+        _mapper = mapper;
+    }
 
-        public ChaptersController(IUnitOfWork unit, IMapper mapper)
-        {
-            _unit = unit;
-            _mapper = mapper;
-        }
+    [HttpGet("get-all")]
+    public async Task<ActionResult<IEnumerable<ChapterDTO>>> GetChapters()
+    {
+        var chapters = await _unit.ChapterRepository
+            .Get()
+            .Include(c => c.Manga)
+            .Include(c => c.Pages)
+            .OrderBy(c => c.Manga.Name)
+            .ToListAsync();
 
-        [HttpGet("get-all")]
-        public async Task<ActionResult<IEnumerable<ChapterDTO>>> GetChapters()
-        {
-            var chapters = await _unit.ChapterRepository
-                .Get()
-                .Include(c => c.Manga)
-                .Include(c => c.Pages)
-                .OrderBy(c => c.Manga.Name)
-                .ToListAsync();
+        if (chapters is null)
+            return BadRequest(new { message = "Manga sem capítulos." });
 
-            if (chapters is null)
-                return BadRequest(new { message = "Manga sem capítulos." });
+        return Ok(chapters);
+    }
 
-            return Ok(chapters);
-        }
+    [HttpGet("get-chapters-by-manga/{id:int}")]
+    public async Task<ActionResult<IEnumerable<Chapter>>> GetChaptersByManga(int id)
+    {
+        var chapters = await _unit.ChapterRepository
+            .Get()
+            .Where(c => c.MangaId == id)
+            //.Include(c => c.Manga)
+            .ToListAsync();
 
-        [HttpGet("get-chapters-by-manga/{id:int}")]
-        public async Task<ActionResult<IEnumerable<Chapter>>> GetChaptersByManga(int id)
-        {
-            var chapters = await _unit.ChapterRepository
-                .Get()
-                .Where(c => c.MangaId == id)
-                //.Include(c => c.Manga)
-                .ToListAsync();
+        if (chapters is null)
+            return BadRequest(new { message = "Manga sem capítulos." });
 
-            if (chapters is null)
-                return BadRequest(new { message = "Manga sem capítulos." });
+        return Ok(chapters);
+    }
 
-            return Ok(chapters);
-        }
+    [HttpGet("get-by-id/{id:int}", Name = "ById")]
+    public async Task<ActionResult<Chapter>> GetChapter(int id)
+    {
+        var chapter = await _unit.ChapterRepository.GetById(c => c.Id == id);
 
-        [HttpGet("get-by-id/{id:int}", Name = "ById")]
-        public async Task<ActionResult<Chapter>> GetChapter(int id)
-        {
-            var chapter = await _unit.ChapterRepository.GetById(c => c.Id == id);
+        if (chapter is null)
+            return BadRequest(new { message = "Capítulo não encontrado." });
 
-            if (chapter is null)
-                return BadRequest(new { message = "Capítulo não encontrado." });
+        return Ok(chapter);
+    }
 
-            return Ok(chapter);
-        }
+    [HttpPost("create-new-chapter")]
+    public async Task<ActionResult<ChapterDTO>> PostChapter([FromForm] ChapterDTO chapterDto, List<IFormFile> files)
+    {
+        var chapter = _mapper.Map<Chapter>(chapterDto);
 
-        [HttpPost("create-new-chapter")]
+        _unit.ChapterRepository.Add(chapter);
 
-        public async Task<ActionResult<ChapterDTO>> PostChapter([FromForm] ChapterDTO chapterDto, List<IFormFile> files)
-        {
-            var chapter = _mapper.Map<Chapter>(chapterDto);
+        var manga = await _unit.MangaRepository.GetById(m => m.Id == chapter.MangaId);
 
-            _unit.ChapterRepository.Add(chapter);
+        if (manga is null) return BadRequest(new { message = "Manga não encontrado." });
+        if (chapter is null) return BadRequest(new { message = "Capítulo não encontrado." });
 
-            var manga = await _unit.MangaRepository.GetById(m => m.Id == chapter.MangaId);
+        //_unit.PageRepository?.ReadFilesAndCreatePages(files, chapter.ChapterNumber.ToString(), chapter,
+        // manga.Name);
 
-            if (manga is null)
-                return BadRequest(new { message = "Manga não encontrado." });
+        _unit.PageRepository.CreatePages(files, chapter);
 
-            if (chapter is null)
-                return BadRequest(new { message = "Capítulo não encontrado." });
+        manga.Chapters?.Add(chapter);
 
-            _unit.PageRepository?.ReadFilesAndCreatePages(files, chapter.ChapterNumber.ToString(), chapter,
-                manga.Name);
+        await _unit.Commit();
 
-            manga.Chapters?.Add(chapter);
+        chapterDto = _mapper.Map<ChapterDTO>(chapter);
 
-            await _unit.Commit();
+        return new CreatedAtRouteResult("ById", new { id = chapter.Id }, chapterDto);
+    }
 
-            var _chapterDto = _mapper.Map<ChapterDTO>(chapter);
+    [HttpPut("update-chapter/{id:int}")]
+    public async Task<ActionResult> UpdateChapter(int id, [FromForm] ChapterDTO chapterDto)
+    {
+        if (id != chapterDto.Id)
+            return BadRequest(new { message = "Capítulo inválido." });
 
-            return new CreatedAtRouteResult("ById", new { id = chapter.Id }, _chapterDto);
-        }
+        var chapter = _mapper.Map<Chapter>(chapterDto);
 
-        [HttpPut("update-chapter/{id:int}")]
-        public async Task<ActionResult> UpdateChapter(int id, [FromForm] ChapterDTO chapterDto)
-        {
-            if (id != chapterDto.Id)
-                return BadRequest(new { message = "Capítulo inválido." });
+        if (!ModelState.IsValid)
+            return BadRequest(new { message = "Capítulo inválido." });
 
-            var chapter = _mapper.Map<Chapter>(chapterDto);
+        _unit.ChapterRepository.Update(chapter);
 
-            if (!ModelState.IsValid)
-                return BadRequest(new { message = "Capítulo inválido." });
+        await _unit.Commit();
 
-            _unit.ChapterRepository.Update(chapter);
+        return Ok(new { message = "Capítulo atualizado com sucesso." });
+    }
 
-            await _unit.Commit();
+    [HttpPut("update-pages/{chapterNumber:int}")]
+    public async Task<ActionResult> UpdatePages(int chapterNumber, List<IFormFile> files)
+    {
 
-            return Ok(new { message = "Capítulo atualizado com sucesso." });
-        }
+        var chapter = await _unit.ChapterRepository.GetById(c => c.ChapterNumber == chapterNumber);
 
-        [HttpPut("update-pages/{chapterNumber:int}")]
-        public async Task<ActionResult> UpdatePages(int chapterNumber, IFormFile cover, List<IFormFile> files)
-        {
+        if (chapter is null)
+            return BadRequest(new { message = "Capítulo não encontrado." });
 
-            var chapter = await _unit.ChapterRepository.GetById(c => c.ChapterNumber == chapterNumber);
+        var manga = await _unit.MangaRepository.GetById(m => m.Id == chapter.MangaId);
+        //_unit.PageRepository.ReplaceFiles(files, chapterNumber.ToString(), manga.Name, chapter);
+        if (manga is not null)
+            _unit.PageRepository.CreatePages(files, chapter);
 
-            if (chapter is null)
-                return BadRequest(new { message = "Capítulo não encontrado." });
+        await _unit.Commit();
 
-            var manga = await _unit.MangaRepository.GetById(m => m.Id == chapter.MangaId);
-            manga.Cover = cover.FileName;
-            _unit.PageRepository.ReplaceFiles(files, chapterNumber.ToString(), manga.Name, chapter);
+        return Ok(new { message = "Capítulo atualizado com sucesso." });
+    }
 
-            await _unit.Commit();
+    [HttpDelete("remove-chapter/{mangaId:int}/{chapterNumber:int}")]
+    public async Task<ActionResult<Chapter>> RemoveChapter(int mangaId, int chapterNumber)
+    {
+        var chapter = await _unit.ChapterRepository
+            .Get()
+            .Include(c => c.Pages)
+            .FirstOrDefaultAsync(c => c.Manga.Id == mangaId);
 
-            return Ok(new { message = "Capítulo atualizado com sucesso." });
-        }
+        if (chapter is null)
+            return BadRequest(new { message = "Capítulo não encontrado." });
 
-        [HttpDelete("remove-chapter/{mangaId:int}/{chapterNumber:int}")]
-        public async Task<ActionResult<Chapter>> RemoveChapter(int mangaId, int chapterNumber)
-        {
-            // var chapter = await _unit.ChapterRepository.GetById(c => c.ChapterNumber == chapterNumber);
-            var chapter = await _unit.ChapterRepository
-                .Get()
-                .Include(c => c.Pages)
-                .FirstOrDefaultAsync(c => c.Manga.Id == mangaId);
+        var manga = await _unit.MangaRepository.GetById(m => m.Id == chapter.MangaId);
 
-            if (chapter is null)
-                return BadRequest(new { message = "Capítulo não encontrado." });
+        if (mangaId != manga.Id)
+            return BadRequest(new { manga.Name });
 
-            var manga = await _unit.MangaRepository.GetById(m => m.Id == chapter.MangaId);
-            //var _mangaName = manga.Name.ToLower();
+        _unit.ChapterRepository.Remove(chapter);
 
-            if (mangaId != manga.Id)
-                return BadRequest(new { manga.Name });
+        await _unit.Commit();
 
-            if (chapter.Pages != null && chapter.Pages.Count > 0)
-                _unit.PageRepository.DeletePageFiles(manga.Name, chapterNumber.ToString());
-
-            _unit.ChapterRepository.Remove(chapter);
-
-            await _unit.Commit();
-
-            return Ok(new { message = "Capítulo removido com sucesso." });
-        }
+        return Ok(new { message = "Capítulo removido com sucesso." });
     }
 }
 

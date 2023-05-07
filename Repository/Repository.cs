@@ -2,6 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using TesteApi.Context;
 using TesteApi.Models;
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace TesteApi.Repository;
 
@@ -40,5 +45,34 @@ public class Repository<T> : IRepository<T> where T : class
     {
         _context.Entry(entity).State = EntityState.Modified;
         _context.Set<T>().Update(entity);
+    }
+
+    public async Task<string> ImgurImageUpload(IFormFile imageFile)
+    {
+        const string imgurApiEndpoint = "https://api.imgur.com/3/upload";
+        const string imgurClientId = "1b660fd81e65724";
+
+        using (var httpClient = new HttpClient())
+        {
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Client-ID", imgurClientId);
+
+            using (var form = new MultipartFormDataContent())
+            {
+                using (var stream = imageFile.OpenReadStream())
+                {
+                    var imageContent = new StreamContent(stream);
+                    imageContent.Headers.ContentType = new MediaTypeHeaderValue(imageFile.ContentType);
+                    form.Add(imageContent, "image", imageFile.FileName);
+
+                    var response = await httpClient.PostAsync(imgurApiEndpoint, form);
+                    var responseContent = await response.Content.ReadAsStringAsync();
+
+                    dynamic jsonResponse = Newtonsoft.Json.JsonConvert.DeserializeObject(responseContent);
+                    string imageUrl = jsonResponse.data.link;
+
+                    return imageUrl;
+                }
+            }
+        }
     }
 }

@@ -34,11 +34,10 @@ public class Manga
     public DateTime Updated { get; set; }
     public DateTime LastUpdated { get; set; }
 
-    public string? Cover { get; set; }
+    public string? CoverUrl { get; set; }
+    public ICollection<Chapter>? Chapters { get; set; }
+    public ICollection<Genre>? Genres { get; set; }
 
     [NotMapped]
     public int[] GenresId { get; set; }
-
-    public ICollection<Chapter>? Chapters { get; set; }
-    public ICollection<Genre>? Genres { get; set; }
 }
