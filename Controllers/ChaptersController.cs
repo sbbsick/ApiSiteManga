@@ -43,7 +43,7 @@ public class ChaptersController : ControllerBase
         var chapters = await _unit.ChapterRepository
             .Get()
             .Where(c => c.MangaId == id)
-            //.Include(c => c.Manga)
+            .Include(c => c.Pages)
             .ToListAsync();
 
         if (chapters is null)
@@ -55,7 +55,11 @@ public class ChaptersController : ControllerBase
     [HttpGet("get-by-id/{id:int}", Name = "ById")]
     public async Task<ActionResult<Chapter>> GetChapter(int id)
     {
-        var chapter = await _unit.ChapterRepository.GetById(c => c.Id == id);
+        var chapter = await _unit.ChapterRepository
+            .Get()
+            .Where(c => c.Id == id)
+            .Include(c => c.Pages)
+            .FirstOrDefaultAsync();
 
         if (chapter is null)
             return BadRequest(new { message = "Capítulo não encontrado." });

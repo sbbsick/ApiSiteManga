@@ -42,6 +42,7 @@ namespace TesteApi.Controllers
             var manga = await _unit.MangaRepository
                 .Get()
                 .Include(m => m.Genres)
+                .Include(m => m.Chapters)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (id == 0)
