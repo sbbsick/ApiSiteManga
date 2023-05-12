@@ -28,7 +28,7 @@ public class ChaptersController : ControllerBase
             .Get()
             .Include(c => c.Manga)
             .Include(c => c.Pages)
-            .OrderBy(c => c.Manga.Name)
+            //.OrderBy(c => c.Manga.Name)
             .ToListAsync();
 
         if (chapters is null)

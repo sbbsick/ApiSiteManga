@@ -27,7 +27,7 @@ namespace TesteApi.Controllers
                 .Get()
                 .Include(m => m.Chapters)
                 .Include(m => m.Genres)
-                .OrderBy(m => m.Name)
+                //.OrderBy(m => m.Name)
                 .ToListAsync();
 
             if (mangas is null)
@@ -96,7 +96,7 @@ namespace TesteApi.Controllers
         }
 
         [HttpPut("update-manga/{id:int}")]
-        public async Task<ActionResult> Update(int id, [FromForm] MangaDTO mangaDto, IFormFile mangaCover)
+        public async Task<ActionResult> Update(int id, [FromForm] MangaDTO mangaDto, IFormFile? mangaCover)
         {
             if (id != mangaDto.Id)
                 return BadRequest("Mangá não encontrado.");
@@ -106,6 +106,7 @@ namespace TesteApi.Controllers
             if (mangaCover is not null)
                 manga.CoverUrl = _unit.MangaRepository.ImgurImageUpload(mangaCover).Result;
 
+            //ToDo arrumar os generos caso eles sejam iguais, para não dar erro.
             if (manga.GenresId != null && manga.Id != 0) //****// != 0
             {
                 foreach (var ids in manga.GenresId)
