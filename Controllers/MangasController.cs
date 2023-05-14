@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TesteApi.DTOs;
@@ -27,7 +29,6 @@ namespace TesteApi.Controllers
                 .Get()
                 .Include(m => m.Chapters)
                 .Include(m => m.Genres)
-                //.OrderBy(m => m.Name)
                 .ToListAsync();
 
             if (mangas is null)
@@ -68,6 +69,7 @@ namespace TesteApi.Controllers
             return Ok(manga);
         }
 
+        
         [HttpPost("create-new-manga")]
         public async Task<ActionResult<Manga>> Create([FromForm] MangaDTO mangaDto, IFormFile mangaCover)
         {
@@ -95,6 +97,7 @@ namespace TesteApi.Controllers
             return new CreatedAtRouteResult("MangaById", new { id = manga.Id }, mangaDto);
         }
 
+        
         [HttpPut("update-manga/{id:int}")]
         public async Task<ActionResult> Update(int id, [FromForm] MangaDTO mangaDto, IFormFile? mangaCover)
         {
@@ -106,11 +109,17 @@ namespace TesteApi.Controllers
             if (mangaCover is not null)
                 manga.CoverUrl = _unit.MangaRepository.ImgurImageUpload(mangaCover).Result;
 
-            //ToDo arrumar os generos caso eles sejam iguais, para não dar erro.
+            if (mangaCover is null && manga.Id != 0)
+            {
+                var mangaCoverUrl = await _unit.MangaRepository.GetById(m => m.Id == manga.Id);
+                manga.CoverUrl = mangaCoverUrl.CoverUrl;
+            }
+
             if (manga.GenresId != null && manga.Id != 0) //****// != 0
             {
                 foreach (var ids in manga.GenresId)
                 {
+                    manga.Genres?.Remove(await _unit.GenreRepository.GetById(g => g.Id == ids));
                     manga.Genres?.Add(await _unit.GenreRepository.GetById(g => g.Id == ids));
                     _unit.MangaRepository.Update(manga);
                 }
@@ -118,10 +127,10 @@ namespace TesteApi.Controllers
 
             _unit.MangaRepository.Update(manga);
             await _unit.Commit();
-
             return Ok(manga);
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpDelete("remove-manga/{id:int}")]
         public async Task<ActionResult> Remove(int id)
         {
@@ -132,10 +141,6 @@ namespace TesteApi.Controllers
 
             if (manga is null)
                 return NotFound("O manga não foi encontrado");
-
-            //if (manga.Chapters != null && manga.Chapters.Count > 0)
-            //    _unit.MangaRepository.DeleteMangaPages(manga.Name);
-
 
             _unit.MangaRepository.Remove(manga);
 

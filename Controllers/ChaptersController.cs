@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -67,6 +69,7 @@ public class ChaptersController : ControllerBase
         return Ok(chapter);
     }
 
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpPost("create-new-chapter")]
     public async Task<ActionResult<ChapterDTO>> PostChapter([FromForm] ChapterDTO chapterDto, List<IFormFile> files)
     {
@@ -93,6 +96,7 @@ public class ChaptersController : ControllerBase
         return new CreatedAtRouteResult("ById", new { id = chapter.Id }, chapterDto);
     }
 
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpPut("update-chapter/{id:int}")]
     public async Task<ActionResult> UpdateChapter(int id, [FromForm] ChapterDTO chapterDto)
     {
@@ -111,6 +115,7 @@ public class ChaptersController : ControllerBase
         return Ok(new { message = "Capítulo atualizado com sucesso." });
     }
 
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpPut("update-pages/{chapterNumber:int}")]
     public async Task<ActionResult> UpdatePages(int chapterNumber, List<IFormFile> files)
     {
@@ -130,6 +135,7 @@ public class ChaptersController : ControllerBase
         return Ok(new { message = "Capítulo atualizado com sucesso." });
     }
 
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpDelete("remove-chapter/{mangaId:int}/{chapterNumber:int}")]
     public async Task<ActionResult<Chapter>> RemoveChapter(int mangaId, int chapterNumber)
     {
