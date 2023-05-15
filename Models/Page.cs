@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using TesteApi.DTOs;
 
 namespace TesteApi.Models;
 
@@ -11,6 +9,7 @@ public class Page
 
     //[NotMapped]
     //public List<IFormFile>? Files { get; set; }
+    public string? PageNumber { get; set; }
 
     public string? PageUrl { get; set; }
 

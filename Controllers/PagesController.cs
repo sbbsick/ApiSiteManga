@@ -23,10 +23,9 @@ namespace TesteApi.Controllers
             var chapter = _unit.ChapterRepository
                 .Get()
                 .Where(c => c.Id == chapterId)
+                .Include(c => c.Pages)
                 .Include(c => c.Manga)
                 .Select(c => c.Manga.Name);
-
-
 
             if (chapter is null)
                 return BadRequest(new { message = "Capítulo não encontrado." });

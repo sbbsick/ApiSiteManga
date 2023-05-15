@@ -106,15 +106,11 @@ namespace TesteApi.Controllers
 
             var manga = _mapper.Map<Manga>(mangaDto);
 
-            if (mangaCover is not null)
-                manga.CoverUrl = _unit.MangaRepository.ImgurImageUpload(mangaCover).Result;
-
-            if (mangaCover is null && manga.Id != 0)
-            {
-                var mangaCoverUrl = await _unit.MangaRepository.GetById(m => m.Id == manga.Id);
-                manga.CoverUrl = mangaCoverUrl.CoverUrl;
-            }
-
+            if (mangaCover is null)
+                return BadRequest("Por favor, adicione uma capa");
+            
+            manga.CoverUrl = _unit.MangaRepository.ImgurImageUpload(mangaCover).Result;
+            
             if (manga.GenresId != null && manga.Id != 0) //****// != 0
             {
                 foreach (var ids in manga.GenresId)

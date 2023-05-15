@@ -112,7 +112,7 @@ namespace TesteApi.Controllers
                 Authenticated = true,
                 Token = new JwtSecurityTokenHandler().WriteToken(token),
                 Expiration = expiration,
-                Message = "TOKEN JWT - OK"
+                Message = "Token gerado com sucesso!"
 
             };
 

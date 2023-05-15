@@ -90,6 +90,7 @@ public class PageRepository : Repository<Page>, IPageRepository
             var page = new Page
             {
                 PageUrl = ImgurImageUpload(file).Result,
+                PageNumber = file.FileName,
                 ChapterId = chapter.Id,
                 Chapter = chapter
             };
