@@ -47,6 +47,7 @@ public class Repository<T> : IRepository<T> where T : class
         _context.Set<T>().Update(entity);
     }
 
+    //ToDo add a method to upload images to google cloud storage
     public async Task<string> ImgurImageUpload(IFormFile imageFile)
     {
         const string imgurApiEndpoint = "https://api.imgur.com/3/upload";
