@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using System;
 using TesteApi.Context;
+using TesteApi.Services;
 
 namespace TesteApi.Repository;
 
@@ -13,8 +14,6 @@ public class UnitOfWork : IUnitOfWork
 
     private readonly IWebHostEnvironment _environment;
     private readonly MyContext _context;
-
-
 
     public UnitOfWork(MyContext context, IWebHostEnvironment environment)
     {

@@ -11,7 +11,7 @@ public class Page
     //public List<IFormFile>? Files { get; set; }
     public string? PageNumber { get; set; }
 
-    public string? PageUrl { get; set; }
+    public string PageUrl { get; set; }
 
     public int ChapterId { get; set; }
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using TesteApi.Context;
 using TesteApi.Models;
+using TesteApi.Services;
 
 namespace TesteApi.Repository;
 
@@ -83,20 +84,18 @@ public class PageRepository : Repository<Page>, IPageRepository
     //    ReadFilesAndCreatePages(files, subDirectory, chapter, mangaName);
     //}
 
-    public void CreatePages(List<IFormFile> files, Chapter chapter)
+    public void CreatePages(List<IFormFile> files, Chapter chapter, string mangaName)
     {
-        foreach (var file in files)
+        var blobStorageService = new BlobStorageService();
+        foreach (var page in files.Select(file => new Page
+                 {   PageUrl = blobStorageService.Upload(file, mangaName),
+                     PageNumber = file.FileName,
+                     ChapterId = chapter.Id,
+                     Chapter = chapter
+                 }))
         {
-            var page = new Page
-            {
-                PageUrl = ImgurImageUpload(file).Result,
-                PageNumber = file.FileName,
-                ChapterId = chapter.Id,
-                Chapter = chapter
-            };
             Add(page);
         }
-
     }
 
 }

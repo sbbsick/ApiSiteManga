@@ -29,6 +29,7 @@ namespace TesteApi.Controllers
                 .Get()
                 .Include(m => m.Chapters)
                 .Include(m => m.Genres)
+                .OrderByDescending(m => m.Id)
                 .ToListAsync();
 
             if (mangas is null)

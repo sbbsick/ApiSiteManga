@@ -8,6 +8,7 @@ public interface IRepository<T>
     IQueryable<T> Get();
     Task<T> GetById(Expression<Func<T, bool>> predicate);
     Task<string> ImgurImageUpload(IFormFile imageFile);
+    //Task<string> UploadFile(IFormFile imageFile);
     void Add(T entity);
     void Update(T entity);
     void Remove(T entity);

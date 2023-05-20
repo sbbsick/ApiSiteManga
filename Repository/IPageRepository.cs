@@ -5,7 +5,7 @@ namespace TesteApi.Repository;
 
 public interface IPageRepository : IRepository<Page>
 {
-    void CreatePages(List<IFormFile> files, Chapter chapter);
+    void CreatePages(List<IFormFile> files, Chapter chapter, string mangaName);
     //public Task PostMultiFileAsync(List<PageUpload> fileData, [FromForm] Page page);
     //public void UploadFiles(List<IFormFile> files, string subDirectory, string mangaName);
     //public void ReadFilesAndCreatePages(List<IFormFile> files, string subDirectory, Chapter chapter, string mangaName);

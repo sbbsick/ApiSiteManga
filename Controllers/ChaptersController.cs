@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TesteApi.DTOs;
@@ -30,7 +29,6 @@ public class ChaptersController : ControllerBase
             .Get()
             .Include(c => c.Manga)
             .Include(c => c.Pages)
-            //.OrderBy(c => c.Manga.Name)
             .ToListAsync();
 
         if (chapters is null)
@@ -85,7 +83,7 @@ public class ChaptersController : ControllerBase
         //_unit.PageRepository?.ReadFilesAndCreatePages(files, chapter.ChapterNumber.ToString(), chapter,
         // manga.Name);
 
-        _unit.PageRepository.CreatePages(files, chapter);
+        _unit.PageRepository.CreatePages(files, chapter, manga.Name);
 
         manga.Chapters?.Add(chapter);
 
@@ -128,7 +126,7 @@ public class ChaptersController : ControllerBase
         var manga = await _unit.MangaRepository.GetById(m => m.Id == chapter.MangaId);
         //_unit.PageRepository.ReplaceFiles(files, chapterNumber.ToString(), manga.Name, chapter);
         if (manga is not null)
-            _unit.PageRepository.CreatePages(files, chapter);
+            _unit.PageRepository.CreatePages(files, chapter, manga.Name);
 
         await _unit.Commit();
 
