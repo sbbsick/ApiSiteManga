@@ -88,7 +88,7 @@ public class PageRepository : Repository<Page>, IPageRepository
     {
         var blobStorageService = new BlobStorageService();
         foreach (var page in files.Select(file => new Page
-                 {   PageUrl = blobStorageService.Upload(file, mangaName),
+                 {   PageUrl = blobStorageService.Upload(file, mangaName, chapter.ChapterNumber),
                      PageNumber = file.FileName,
                      ChapterId = chapter.Id,
                      Chapter = chapter

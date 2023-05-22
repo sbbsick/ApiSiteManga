@@ -20,17 +20,29 @@ namespace TesteApi.Controllers
         [HttpGet("get-pages-by-chapter/{chapterId:int}")]
         public async Task<ActionResult> GetPagesByChapter(int chapterId)
         {
-            var chapter = _unit.ChapterRepository
+            //var chapter = _unit.ChapterRepository
+            //    .Get()
+            //    .Where(c => c.Id == chapterId)
+            //    .Include(c => c.Pages)
+            //    .Include(c => c.Manga)
+            //    .Select(c => c.Manga.Name);
+
+            //if (chapter is null)
+            //    return BadRequest(new { message = "Capítulo não encontrado." });
+
+            //return Ok(chapter);
+
+            var pages = await _unit.PageRepository
                 .Get()
-                .Where(c => c.Id == chapterId)
-                .Include(c => c.Pages)
-                .Include(c => c.Manga)
-                .Select(c => c.Manga.Name);
+                .Where(p => p.ChapterId == chapterId)
+                .ToListAsync();
 
-            if (chapter is null)
-                return BadRequest(new { message = "Capítulo não encontrado." });
+            if (pages.Count < 1) 
+                return NotFound(new {message = "Páginas não encontradas."});
 
-            return Ok(chapter);
+            return Ok(pages);
         }
     }
+
+
 }

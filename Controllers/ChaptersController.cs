@@ -37,7 +37,7 @@ public class ChaptersController : ControllerBase
         return Ok(chapters);
     }
 
-    [HttpGet("get-chapters-by-manga/{id:int}")]
+    [HttpGet("get-chapters-by-mangaId/{id:int}")]
     public async Task<ActionResult<IEnumerable<Chapter>>> GetChaptersByManga(int id)
     {
         var chapters = await _unit.ChapterRepository
